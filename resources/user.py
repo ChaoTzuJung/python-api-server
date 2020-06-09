@@ -21,6 +21,7 @@ class User(Resource):
         db = pymysql.connect('localhost', 'root', 'password', 'api')
         cursor = db.cursor(pymysql.cursors.DictCursor)
         return db, cursor
+
     def get(self, id):
         db, cursor = self.db_init()
         sql = """Select * From api.users Where id = '{}' """.format(id)
@@ -30,9 +31,36 @@ class User(Resource):
         # 取得 cursor 所有資料
         user = cursor.fetchone()
         db.close()
-
         return jsonify({ 'data': user })
 
+    def patch(self, id):
+        db, cursor = self.db_init()
+        arg = parser.parse_args()
+        user = {
+            'name': arg['name'],
+            'gender': arg['gender'],
+            'birth': arg['birth'],
+            'note': arg['note'],
+        }
+        query = []
+        for key, value in user.items():
+            if value != None:
+                query.append(key + " = " + "'{}'".format(value))
+
+        query = ', '.join(query)
+        sql = """
+            UPDATE `api`.`users` SET {} WHERE (`id` = '{}');
+        """.format(query, id)
+        response = {}
+        try:
+            cursor.execute(sql)
+            response['msg'] = 'success'
+        except:
+            traceback.print_exc()
+            response['msg'] = 'fail'
+        db.commit()
+        db.close()
+        return jsonify(response)
 
 # 建立 users 物件, self 就是 this，資源初始化設定
 class Users(Resource):
