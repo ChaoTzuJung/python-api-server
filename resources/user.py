@@ -8,7 +8,7 @@ import traceback
 
 # 幫我們處理使用者傳的參數
 parser = reqparse.RequestParser()
-# 設定白名單，哪些參數要接
+# 設定白名單，哪些參數要接，讓 arg 可以讀取 url 給的query參數
 parser.add_argument('name')
 parser.add_argument('gender')
 parser.add_argument('birth')
@@ -64,7 +64,7 @@ class User(Resource):
     def delete(self, id):
         db, cursor = self.db_init()
         sql = """
-            DELETE FROM `api`.`users` WHERE (`id` = '{}');
+            UPDATE `api`.`users` SET deleted = True WHERE (`id` = '{}');
         """.format(id)
         response = {}
         try:
@@ -89,7 +89,10 @@ class Users(Resource):
     def get(self):
         db, cursor = self.db_init()
         # schema.table 
-        sql = 'Select * From api.users'
+        sql = 'Select * From api.users where deleted is not True'
+        arg = parser.parse_args()
+        if arg['gender'] != None:
+            sql += ' and gender = "{}"'.format(arg['gender'])
         cursor.execute(sql)
         # db 確認好就送出
         db.commit()
