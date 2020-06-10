@@ -61,6 +61,21 @@ class User(Resource):
         db.commit()
         db.close()
         return jsonify(response)
+    def delete(self, id):
+        db, cursor = self.db_init()
+        sql = """
+            DELETE FROM `api`.`users` WHERE (`id` = '{}');
+        """.format(id)
+        response = {}
+        try:
+            cursor.execute(sql)
+            response['msg'] = 'success'
+        except:
+            traceback.print_exc()
+            response['msg'] = 'fail'
+        db.commit()
+        db.close()
+        return jsonify(response)
 
 # 建立 users 物件, self 就是 this，資源初始化設定
 class Users(Resource):
