@@ -4,6 +4,8 @@ from resources.user import Users, User
 from resources.account import Accounts, Account
 import pymysql
 import traceback
+import jwt
+import time
 
 # 宣告是 flask app
 app = Flask(__name__) 
@@ -16,6 +18,21 @@ api.add_resource(User, '/user/<id>')
 # Nest Resource 當一個資源是差在另一個資源下
 api.add_resource(Accounts, '/user/<user_id>/accounts')
 api.add_resource(Account, '/user/<user_id>/account/<id>')
+
+@app.before_request()
+def auth():
+    token = request.headers.get('auth')
+    user_id = request.get_json()['user_id']
+    # 用 jwt 確認會員登入，用 user_id 與 timestamp 加密，在用 utf-8 解碼取得 token
+    valid_token = jwt.encode({'user_id': user_id, 'timestamp': int(time.time())}, 'password', algorithm='HS256').decode('utf-8')
+    print(valid_token)
+    if token == valid_token:
+        pass
+    else:
+        return {
+            'msg': 'invalid token'
+        }
+
 
 # @裝飾子
 @app.route('/')
