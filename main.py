@@ -11,8 +11,9 @@ api = Api(app)
 # 產生路由 - 進 /users 執行 Users 物件
 api.add_resource(Users, '/users')
 api.add_resource(User, '/user/<id>')
-api.add_resource(Accounts, '/accounts')
-api.add_resource(Account, '/account/<id>')
+# Nest Resource 當一個資源是差在另一個資源下
+api.add_resource(Accounts, '/user/<user_id>/accounts')
+api.add_resource(Account, '/user/<user_id>/account/<id>')
 
 # @裝飾子
 @app.route('/')

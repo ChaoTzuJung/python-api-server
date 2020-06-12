@@ -24,7 +24,7 @@ class User(Resource):
 
     def get(self, id):
         db, cursor = self.db_init()
-        sql = """Select * From api.users Where id = '{}' and deleted is not True """.format(id)
+        sql = """Select * From api.users where id = '{}' and deleted is not True """.format(id)
         cursor.execute(sql)
         # db 確認好就送出
         db.commit()
