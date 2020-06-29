@@ -5,6 +5,8 @@ from flask import jsonify, make_response
 import pymysql
 # 印出錯誤訊息的套件
 import traceback
+from server import db
+from models import UserModel
 
 # 幫我們處理使用者傳的參數
 parser = reqparse.RequestParser()
@@ -87,22 +89,25 @@ class Users(Resource):
         return db, cursor
     # http get method
     def get(self):
-        db, cursor = self.db_init()
-        # schema.table 
-        sql = 'Select * From api.users where deleted is not True'
-        arg = parser.parse_args()
-        if arg['gender'] != None:
-            sql += ' and gender = "{}"'.format(arg['gender'])
-        cursor.execute(sql)
-        # db 確認好就送出
-        db.commit()
-        # 取得 cursor 所有資料
-        users = cursor.fetchall()
-        db.close()
-
-        return jsonify({ 'data': users })
+        # db, cursor = self.db_init()
+        # # schema.table 
+        # sql = 'Select * From api.users where deleted is not True'
+        # arg = parser.parse_args()
+        # if arg['gender'] != None:
+        #     sql += ' and gender = "{}"'.format(arg['gender'])
+        # cursor.execute(sql)
+        # # db 確認好就送出
+        # db.commit()
+        # # 取得 cursor 所有資料
+        # users = cursor.fetchall()
+        # db.close()
+        # return jsonify({ 'data': users })
+        print(UserModel)
+        users = UserModel.query.filter(UserModel.deleted.isnot(True)).all()
+        print(users)
+        return jsonify({ 'data': list(map(lambda user: user.serialize(), users))})
     def post(self):
-        db, cursor = self.db_init()
+        # db, cursor = self.db_init()
         # 把使用者給我的參數傳到 arg 內
         arg = parser.parse_args()
         user = {
@@ -112,20 +117,24 @@ class Users(Resource):
             'note': arg['note'],
         }
         # 3個引號讓 python 知道這是長字串，換行時python不會把字串當成新的一行
-        sql = """
-            INSERT INTO `api`.`users` (`name`, `gender`, `birth`, `note`) VALUES ('{}', '{}', '{}', '{}');
-        """.format(user['name'], user['gender'], user['birth'], user['note'])
+        # sql = """
+        #     INSERT INTO `api`.`users` (`name`, `gender`, `birth`, `note`) VALUES ('{}', '{}', '{}', '{}');
+        # """.format(user['name'], user['gender'], user['birth'], user['note'])
 
         response = {}
         status_code = 200
+
         try:
-            cursor.execute(sql)
+            # cursor.execute(sql)
+            new_user = UserModel(name=user['name'], gender=user['gender'], birth=user['birth'], note=user['note'])
+            db.session.add(new_user)
+            db.session.commit()
             response['msg'] = 'success'
         except:
             status_code = 400
             traceback.print_exc()
             response['msg'] = 'failed'
 
-        db.commit()
-        db.close()
+        # db.commit()
+        # db.close()
         return make_response(jsonify(response), status_code)

@@ -6,6 +6,7 @@ import pymysql
 import traceback
 import jwt
 import time
+from server import app
 
 # 宣告是 flask app，__name__ 是 python 中，讓同層的其他檔案，可以成為讓其他 python 檔案使用的 module ，所需要的預設檔案。
 app = Flask(__name__) 
