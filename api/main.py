@@ -19,11 +19,16 @@ api.add_resource(User, '/user/<id>')
 api.add_resource(Accounts, '/user/<user_id>/accounts')
 api.add_resource(Account, '/user/<user_id>/account/<id>')
 
-@app.before_request()
+# 讀所有端點都要先經過驗證
+@app.before_request
 def auth():
+    #檢查 header 有無token
     token = request.headers.get('auth')
+    # 用 json 方式傳 user_id
     user_id = request.get_json()['user_id']
     # 用 jwt 確認會員登入，用 user_id 與 timestamp 加密，在用 utf-8 解碼取得 token
+    # jwt.encode('要加密的資料', secert_key, '使用的演算法')
+    # jwt.decode('使用的解碼方式') 
     valid_token = jwt.encode({'user_id': user_id, 'timestamp': int(time.time())}, 'password', algorithm='HS256').decode('utf-8')
     print(valid_token)
     if token == valid_token:
